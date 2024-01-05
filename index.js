@@ -53,6 +53,61 @@ function oklab_to_oklch(oklabColor) {
 }
 
 /**
+ * @param {{l:number; c: number; h:number}} oklch_color
+ */
+function oklch_to_rgb(oklch_color) {
+  let oklabColor;
+
+  if (isNaN(oklch_color.h)) {
+    oklabColor = {
+      l: oklch_color.l,
+      a: 0,
+      b: 0,
+    };
+  } else {
+    const angle = (oklch_color.h * Math.PI) / 180;
+    oklabColor = {
+      l: oklch_color.l,
+      a: Math.cos(angle) * oklch_color.c,
+      b: Math.sin(angle) * oklch_color.c,
+    };
+  }
+
+  // Convert OkLab to RGB
+  const c_res_lms_g = {
+    lg: 1.0 * oklabColor.l + 0.3963377773761749 * oklabColor.a + 0.2158037573099136 * oklabColor.b,
+    mg: 1.0 * oklabColor.l + -0.1055613458156586 * oklabColor.a + -0.0638541728258133 * oklabColor.b,
+    sg: 1.0 * oklabColor.l + -0.0894841775298119 * oklabColor.a + -1.2914855480194092 * oklabColor.b,
+  };
+  const c_res_lms = {
+    l: c_res_lms_g.lg ** 3,
+    m: c_res_lms_g.mg ** 3,
+    s: c_res_lms_g.sg ** 3,
+  };
+  const c_res_lin_rgb = {
+    r: 4.0767416360759592 * c_res_lms.l + -3.3077115392580625 * c_res_lms.m + 0.2309699031821046 * c_res_lms.s,
+    g: -1.2684379732850315 * c_res_lms.l + 2.6097573492876882 * c_res_lms.m + -0.3413193760026572 * c_res_lms.s,
+    b: -0.0041960761386755 * c_res_lms.l + -0.7034186179359361 * c_res_lms.m + 1.7076146940746113 * c_res_lms.s,
+  };
+  const c_res_rgb = {
+    r: linear_to_srgb(c_res_lin_rgb.r),
+    g: linear_to_srgb(c_res_lin_rgb.g),
+    b: linear_to_srgb(c_res_lin_rgb.b),
+  };
+
+  return c_res_rgb;
+}
+
+/**
+ * @param {{l:number; c: number; h:number}} oklchColor
+ */
+function inGamut(oklchColor) {
+  const rgbColor = oklch_to_rgb(oklchColor);
+  const { r, g, b } = rgbColor;
+  return [r, g, b].every((c) => c >= 0 && c <= 1);
+}
+
+/**
  * @param {{ r: number; g: number; b: number; }} c1
  * @param {{ r: number; g: number; b: number; }} c2
  * @param {number} t
@@ -124,6 +179,20 @@ function interpolateColor(c1, c2, t) {
   // Step 2 : convert c_res from RGB to Oklch
   const c_res_oklch = oklab_to_oklch(c_res);
 
+  // Step 3 :
+  if (c_res_oklch.l >= 1) {
+    return { r: 1, g: 1, b: 1 };
+  }
+
+  // Step 4 :
+  if (c_res_oklch.l <= 0) {
+    return { r: 0, g: 0, b: 0 };
+  }
+
+  // Step 6 :
+  if (inGamut(c_res_oklch)) {
+    return oklch_to_rgb(c_res_oklch);
+  }
 
   // Convert OkLab to RGB
   /*const c_res_lms_g = {
