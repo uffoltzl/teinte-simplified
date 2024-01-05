@@ -26,6 +26,33 @@ function linear_to_srgb(value) {
 }
 
 /**
+ * @param {{l:number; a: number; b:number}} oklabColor
+ */
+function oklab_to_oklch(oklabColor) {
+  /**
+   * @param {number} angle
+   */
+  function constrainAngle(angle) {
+    return ((angle % 360) + 360) % 360;
+  }
+  const { l, a, b } = oklabColor;
+  let epsilon = 0.0002;
+  if (Math.abs(a) < epsilon && Math.abs(b) < epsilon) {
+    return {
+      l,
+      c: 0,
+      h: NaN,
+    };
+  } else {
+    return {
+      l,
+      c: Math.sqrt(a * a + b * b),
+      h: constrainAngle((Math.atan2(b, a) * 180) / Math.PI),
+    };
+  }
+}
+
+/**
  * @param {{ r: number; g: number; b: number; }} c1
  * @param {{ r: number; g: number; b: number; }} c2
  * @param {number} t
@@ -92,8 +119,14 @@ function interpolateColor(c1, c2, t) {
     b: c1_OkLab.b * (1 - t) + c2_OkLab.b * t,
   };
 
+  // Apply gamut
+  // Step 1 : do not apply to RGB
+  // Step 2 : convert c_res from RGB to Oklch
+  const c_res_oklch = oklab_to_oklch(c_res);
+
+
   // Convert OkLab to RGB
-  const c_res_lms_g = {
+  /*const c_res_lms_g = {
     lg: 1.0 * c_res.l + 0.3963377773761749 * c_res.a + 0.2158037573099136 * c_res.b,
     mg: 1.0 * c_res.l + -0.1055613458156586 * c_res.a + -0.0638541728258133 * c_res.b,
     sg: 1.0 * c_res.l + -0.0894841775298119 * c_res.a + -1.2914855480194092 * c_res.b,
@@ -112,14 +145,13 @@ function interpolateColor(c1, c2, t) {
     r: linear_to_srgb(c_res_lin_rgb.r),
     g: linear_to_srgb(c_res_lin_rgb.g),
     b: linear_to_srgb(c_res_lin_rgb.b),
-  };
+  };*/
 
-  // Apply gamut
-  const mappedColor = {
-    r: Math.min(Math.max(c_res_rgb.r, 0), 1),
-    g: Math.min(Math.max(c_res_rgb.g, 0), 1),
-    b: Math.min(Math.max(c_res_rgb.b, 0), 1),
-  };
+  // const mappedColor = {
+  //   r: Math.min(Math.max(c_res_rgb.r, 0), 1),
+  //   g: Math.min(Math.max(c_res_rgb.g, 0), 1),
+  //   b: Math.min(Math.max(c_res_rgb.b, 0), 1),
+  // };
 
   // Convert color values from [0, 1] to [0, 255]
   return {
