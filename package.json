@@ -7,5 +7,9 @@
   },
   "repository": "git@github.com:uffoltzl/teinte-simplified.git",
   "author": "uffoltzl <l.ufz@hotmail.fr>",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^8.56.0",
+    "vitest": "^1.2.0"
+  }
 }
