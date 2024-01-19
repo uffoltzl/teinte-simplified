@@ -3,13 +3,18 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "interpolate": "node index.js"
+    "interpolate": "node index.js",
+    "benchmark": "node benchmark/index.js"
   },
   "repository": "git@github.com:uffoltzl/teinte-simplified.git",
   "author": "uffoltzl <l.ufz@hotmail.fr>",
   "license": "MIT",
   "devDependencies": {
+    "@types/node": "^20.11.5",
     "eslint": "^8.56.0",
     "vitest": "^1.2.0"
+  },
+  "dependencies": {
+    "hdr-histogram-js": "^3.0.0"
   }
 }

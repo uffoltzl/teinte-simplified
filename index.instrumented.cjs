@@ -1,5 +1,7 @@
 // @ts-check
 
+const { benchmark } = require("./benchmark/benchmark");
+
 /**
  * @param {{ r: number; b: number; g: number; }} color
  */
@@ -175,6 +177,7 @@ function scaleTo255(color) {
  * @param {number} t
  */
 function interpolateColor(c1, c2, t) {
+  benchmark.recordMark("Begin");
   let c1Lab = linearSrgbToOklab(srgbGammaToLinear(scaleTo01(c1)));
   let c2Lab = linearSrgbToOklab(srgbGammaToLinear(scaleTo01(c2)));
 
@@ -313,7 +316,9 @@ function interpolateColor(c1, c2, t) {
     }
   }
 
-  return scaleTo255(srgbLinearToGamma(clippedLinearRGB));
+  const result = scaleTo255(srgbLinearToGamma(clippedLinearRGB));
+  benchmark.recordMark("End");
+  return result;
 }
 
 module.exports = {

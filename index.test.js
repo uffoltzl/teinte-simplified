@@ -13,6 +13,16 @@ describe("interpolate colors", () => {
     expect(c).toEqual({ r: 6, g: 4, b: 0 });
   });
   it("give good results - 2", () => {
+    // Given
+    const c1 = { r: 300, g: 220, b: 220 };
+    const c2 = { r: 220, g: 300, b: 220 };
+    const ratio = 0.5;
+    // When
+    const c = interpolateColor(c1, c2, ratio);
+    // Expect
+    expect(c).toEqual({ r: 255, g: 255, b: 255 });
+  });
+  it("give good results - 3", () => {
     // BUG: il y'a une erreur ici
     // Given
     const c1 = { r: 300, g: 200, b: 200 };
