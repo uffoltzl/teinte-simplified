@@ -192,7 +192,7 @@ class Benchmark {
     let interestingFlows = this.__flows.filter((flow) => {
       if (flow.histogram.totalCount < 0) return false;
       if (flow.name === "Calibration") return true;
-      if (flow.histogram.mean < meanCalibration * 4) return false;
+      if (flow.histogram.mean < meanCalibration) return false;
       return true;
     });
 

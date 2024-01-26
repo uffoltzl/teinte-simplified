@@ -178,17 +178,26 @@ function scaleTo255(color) {
  */
 function interpolateColor(c1, c2, t) {
   benchmark.recordMark("Begin");
+
+  benchmark.recordMark("c1 rgb to oklab begin");
   let c1Lab = linearSrgbToOklab(srgbGammaToLinear(scaleTo01(c1)));
+  benchmark.recordMark("c1 rgb to oklab end");
+
+  benchmark.recordMark("c2 rgb to oklab begin");
   let c2Lab = linearSrgbToOklab(srgbGammaToLinear(scaleTo01(c2)));
+  benchmark.recordMark("c2 rgb to oklab end");
 
   // Interpolate
+  benchmark.recordMark("Interpolation begin");
   let cLab = {
     l: c1Lab.l * (1 - t) + c2Lab.l * t,
     a: c1Lab.a * (1 - t) + c2Lab.a * t,
     b: c1Lab.b * (1 - t) + c2Lab.b * t,
   };
+  benchmark.recordMark("Interpolation end");
 
   // CSS 4 Gamut algorithm
+  benchmark.recordMark("Gamut mapping before loop begin");
 
   // Step 2: convert c_res from RGB to Oklch
   let cLch = oklabToOklch(cLab);
@@ -271,6 +280,9 @@ function interpolateColor(c1, c2, t) {
     return scaleTo255(srgbLinearToGamma(clippedLinearRGB));
   }
 
+  benchmark.recordMark("Gamut mapping before loop end");
+
+  benchmark.recordMark("Gamut mapping loop begin");
   // Step 14:
   while (maxChroma - minChroma > EPSILON) {
     // Step 14.1:
@@ -315,8 +327,12 @@ function interpolateColor(c1, c2, t) {
       }
     }
   }
+  benchmark.recordMark("Gamut mapping loop end");
 
+  benchmark.recordMark("Gamut mapping after loop begin");
   const result = scaleTo255(srgbLinearToGamma(clippedLinearRGB));
+  benchmark.recordMark("Gamut mapping after loop end");
+
   benchmark.recordMark("End");
   return result;
 }
